@@ -5,14 +5,15 @@ module.exports = {
     mode: 'development',
     entry: {
         index: "./src/index.js",
+        merge: "./src/merge.js",
     },
     devtool: 'inline-source-map',
     devServer: {
-        static: './dist'
+        static: './dist',
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/index.html',
+            title: "Binary Search Tree",
         }),
     ],
     output: {
