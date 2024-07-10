@@ -138,28 +138,18 @@ export class Tree {
     }
 
     /**
-     * Searches for a node with the given value starting from the root of the tree.
+     * Searches for a node with the given value, starting from the root of the tree or from a specified node.
      * @param {number} value - The value to search for.
+     * @param {Node} current - The current node in the recursion, defaults to the root of the tree.
      * @returns {Node|null} The found node, or null if the node does not exist.
      */
-    find(value) {
-        let current = this.root; // Start from the root of the tree
-        return this.findRecursive(current, value); // Begin recursive search
-    }
-
-    /**
-     * Recursively searches for the specified value in the binary search tree.
-     * @param {Node} current - The current node in the recursion.
-     * @param {number} value - The value to search for.
-     * @returns {Node|null} The found node, or null if the node does not exist in this path.
-     */
-    findRecursive(current, value) {
+    find(value, current = this.root) {
         if (current === null) return null; // Base case: no node to search
         if (current.data === value) return current; // Node found, return it
         if (value < current.data) {
-            return this.findRecursive(current.left, value); // Search left subtree
+            return this.find(value, current.left); // Search left subtree
         }
-        return this.findRecursive(current.right, value); // Search right subtree
+        return this.find(value, current.right); // Search right subtree
     }
 
     /**
@@ -248,28 +238,21 @@ export class Tree {
      * Performs a postorder traversal of the tree. If a callback is provided, applies it to each node,
      * otherwise collects and returns an array of node values.
      * @param {Function} callback - Optional function to apply to each node.
+     * @param {Node} current - The current node being processed, defaults to the root of the tree.
+     * @param {Array} list - Array to collect node values, initially empty.
      * @returns {Array|null} An array of node values if no callback is provided, or null if a callback is used.
      */
-    postOrder(callback) {
-        const postOrderList = []; // List to collect node values
-        this.postOrderRecursive(this.root, postOrderList, callback); // Start recursive traversal from root
-        if (!callback) return postOrderList; // Return list if no callback provided
-    }
-
-    /**
-     * Helper function to perform a postorder traversal of the tree recursively.
-     * @param {Node} current - The current node being processed.
-     * @param {Array} list - Array to collect node values.
-     * @param {Function} callback - Optional function to apply to each node.
-     */
-    postOrderRecursive(current, list, callback) {
+    postOrder(callback, current = this.root, list = []) {
         if (current === null) return; // Base case: end of branch
-        this.postOrderRecursive(current.left, list, callback); // Traverse left subtree
-        this.postOrderRecursive(current.right, list, callback); // Traverse right subtree
+        this.postOrder(callback, current.left, list); // Traverse left subtree
+        this.postOrder(callback, current.right, list); // Traverse right subtree
         if (callback) {
             callback(current); // Apply callback to current node
         } else {
             list.push(current.data); // Collect current node's data
+        }
+        if (!callback && current === this.root) {
+            return list; // Return collected data only on the initial call if no callback is provided
         }
     }
 
@@ -303,37 +286,73 @@ export class Tree {
     }
 
     /**
-     * Calculates the depth of a specific node from the root of the tree.
-     * Depth is defined as the number of edges from the root to the node.
+     * Calculates the depth of a specified node from the root of the tree, or from another specified node.
+     * Depth is defined as the number of edges from the starting node to the target node.
      *
-     * @param {number} node - The data of the node for which to calculate the depth.
-     * @returns {number} The depth of the node, or Infinity if the node does not exist.
+     * @param {number} target - The data of the node for which to calculate the depth.
+     * @param {Node} current - The current node in the tree during the recursive call, defaults to the root.
+     * @returns {number} The depth of the target node, or Infinity if the node does not exist.
      */
-    depth(node) {
-        let current = this.root; // Start from the root of the tree
-        return this.depthRecursive(node, current); // Initiate recursive depth calculation
+    depth(target, current = this.root) {
+        if (current === null) return Infinity; // Base case: if current is null, target is not in this subtree
+        if (target === current.data) return 0; // Base case: if the target is found, depth is 0
+
+        let leftDepth = this.depth(target, current.left); // Recursively find depth in the left subtree
+        let rightDepth = this.depth(target, current.right); // Recursively find depth in the right subtree
+
+        if (leftDepth === Infinity && rightDepth === Infinity) {
+            return Infinity; // Node not found in either subtree
+        } else {
+            return Math.min(leftDepth, rightDepth) + 1; // Return the minimum depth found plus one for the current node
+        }
     }
 
     /**
-     * Helper function to recursively determine the depth of a specified node from the current node.
+     * Determines if the binary search tree is balanced.
+     * A binary tree is considered balanced if, for every node, the height difference
+     * between its left and right subtree is no more than one.
      *
-     * @param {number} node - The data of the node for which to calculate the depth.
-     * @param {Node} current - The current node in the tree during the recursive call.
-     * @returns {number} The depth of the node, or Infinity if the node does not exist in this path.
+     * @returns {boolean} True if the tree is balanced, otherwise false.
      */
-    depthRecursive(node, current) {
-        if (current === null) return Infinity; // Base case: if current is null, node is not in this subtree
-        if (node === current.data) return 0; // Base case: if the node is found, depth is 0
+    isBalanced() {
+        let current = this.root; // Start checking balance from the root of the tree
+        // Calls the recursive function to check balance from the root
+        // Converts the result to boolean (false if unbalanced, true if balanced)
+        return this.checkBalance(current) !== false;
+    }
 
-        let left = this.depthRecursive(node, current.left); // Recursively find depth in the left subtree
-        let right = this.depthRecursive(node, current.right); // Recursively find depth in the right subtree
+    /**
+     * Recursively checks if the tree is balanced by comparing the heights of the left and right subtrees
+     * for each node. The function also calculates the height of the tree from the current node downwards.
+     *
+     * @param {Node} node - The current node from which to check the balance.
+     * @returns {number|boolean} Returns the height of the subtree rooted at 'node' if it is balanced,
+     * or false if it is unbalanced. If the node is null, it returns -1, indicating no height.
+     */
+    checkBalance(node) {
+        if (node === null) return -1; // Base case: A null node has a height of -1
 
-        if (left === Infinity && right === Infinity) {
-            return Infinity; // Node not found in either subtree
+        // Recursively calculate the height of the left subtree
+        // If left subtree is unbalanced, return false immediately
+        let leftHeight = this.checkBalance(node.left);
+        if (leftHeight === false) return false;
+
+        // Recursively calculate the height of the right subtree
+        // If right subtree is unbalanced, return false immediately
+        let rightHeight = this.checkBalance(node.right);
+        if (rightHeight === false) return false;
+
+        // Check if the current node is balanced by comparing the heights of its subtrees
+        if (Math.abs(leftHeight - rightHeight) > 1) {
+            // If the height difference is greater than 1, tree is unbalanced at this node
+            return false;
         } else {
-            return Math.min(left, right) + 1; // Return the minimum depth found plus one for the current node
+            // If balanced, return the height of the tree from this node
+            return Math.max(leftHeight, rightHeight) + 1;
         }
     }
+
+
 
     /**
      * A utility function to visually print the structure of the tree. Displays the tree
@@ -368,15 +387,17 @@ const tree = new Tree();
 tree.buildTree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
 console.log(tree);
 tree.prettyPrint(tree.root);
-tree.insert(48);
-tree.insert(15);
-tree.delete(4);
-tree.prettyPrint(tree.root);
-console.log(tree.find(67));
-console.log(tree.find(14));
-console.log(tree.levelOrder());
-console.log(tree.inOrder());
-console.log(tree.preOrder());
-console.log(tree.postOrder());
-console.log(tree.height(3));
-console.log(tree.depth(15));
+// tree.insert(48);
+// tree.insert(15);
+// tree.insert(17);
+// tree.delete(4);
+// tree.prettyPrint(tree.root);
+// console.log(tree.find(67));
+// console.log(tree.find(14));
+// console.log(tree.levelOrder());
+// console.log(tree.inOrder());
+// console.log(tree.preOrder());
+// console.log(tree.postOrder());
+// console.log(tree.height(3));
+// console.log(tree.depth(7));
+// console.log(tree.isBalanced());
