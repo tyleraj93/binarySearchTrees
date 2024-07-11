@@ -392,28 +392,39 @@ export class Tree {
     }
 }
 
+const generateRandomNumbers = (count = 20, max = 100) =>
+    Array.from({ length: count }, () => Math.floor(Math.random() * max));
+
 const tree = new Tree();
-tree.buildTree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
+tree.buildTree(generateRandomNumbers());
 console.log("Original Tree:");
 tree.prettyPrint(tree.root);
-tree.insert(48);
-tree.insert(15);
-tree.insert(17);
-tree.insert(16);
-tree.delete(4);
-console.log("Modified Tree:");
-tree.prettyPrint(tree.root);
-// console.log(tree.find(67));
-// console.log(tree.find(14));
+console.log(`Is tree balanced: ${tree.isBalanced()}`);
 // console.log(tree.levelOrder());
 // console.log(tree.inOrder());
 // console.log(tree.preOrder());
 // console.log(tree.postOrder());
-// console.log(tree.height(3));
-// console.log(tree.depth(7));
+tree.insert(76);
+tree.insert(34);
+tree.insert(35);
+tree.insert(36);
+tree.insert(37);
+tree.insert(83);
+tree.insert(23);
+tree.insert(7);
+tree.insert(92);
+tree.insert(56);
+tree.insert(15);
+tree.insert(64);
+tree.insert(4);
+tree.insert(89);
+tree.insert(57);
+tree.insert(73);
+tree.insert(38);
+console.log("Modified Tree:");
+tree.prettyPrint(tree.root);
 console.log(`Is tree balanced: ${tree.isBalanced()}`);
 tree.rebalance();
-// console.log(tree);
 console.log("Rebalanced Tree:")
 tree.prettyPrint(tree.root);
 console.log(`Is tree balanced: ${tree.isBalanced()}`);
