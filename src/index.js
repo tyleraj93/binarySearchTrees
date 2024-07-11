@@ -352,7 +352,16 @@ export class Tree {
         }
     }
 
+    /**
+     * Rebalances the binary search tree by rebuilding it from an inorder traversal to ensure optimal balance.
+     */
+    rebalance() {
+        // Collect node values in sorted order via inorder traversal
+        const arr = this.inOrder();
 
+        // Rebuild the tree from the sorted array to ensure it is balanced
+        this.root = this.buildTree(arr);
+    }
 
     /**
      * A utility function to visually print the structure of the tree. Displays the tree
@@ -385,13 +394,15 @@ export class Tree {
 
 const tree = new Tree();
 tree.buildTree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
-console.log(tree);
+console.log("Original Tree:");
 tree.prettyPrint(tree.root);
-// tree.insert(48);
-// tree.insert(15);
-// tree.insert(17);
-// tree.delete(4);
-// tree.prettyPrint(tree.root);
+tree.insert(48);
+tree.insert(15);
+tree.insert(17);
+tree.insert(16);
+tree.delete(4);
+console.log("Modified Tree:");
+tree.prettyPrint(tree.root);
 // console.log(tree.find(67));
 // console.log(tree.find(14));
 // console.log(tree.levelOrder());
@@ -400,4 +411,9 @@ tree.prettyPrint(tree.root);
 // console.log(tree.postOrder());
 // console.log(tree.height(3));
 // console.log(tree.depth(7));
-// console.log(tree.isBalanced());
+console.log(`Is tree balanced: ${tree.isBalanced()}`);
+tree.rebalance();
+// console.log(tree);
+console.log("Rebalanced Tree:")
+tree.prettyPrint(tree.root);
+console.log(`Is tree balanced: ${tree.isBalanced()}`);
